@@ -1,0 +1,74 @@
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# Virtual environment
+venv/
+env/
+*.env
+*.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django specific
+*.log
+*.pot
+*.pyc
+*.pyo
+*.sqlite3
+db.sqlite3
+db.sqlite3-journal
+*.py[co]
+__pycache__/
+local_settings.py
+
+# Media
+/media
+/media/*
+*.mp4
+*.avi
+
+# Static files
+/static/
+staticfiles/
+
+# IDE and editor specific
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*.orig
+*.bak
+
+# MacOS specific
+.DS_Store
+
+# Test results
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+nosetests.xml
+tests.xml
+
+# Migrations
+*.migration
+*.migrations/
+**/migrations/
+**/migrations/*.py
+**/migrations/*.pyc
+
+# Environment files
+.env
+.env.local
+.env.*.backup
+.env.backup
+
+# Other files
+celerybeat-schedule
+*.pid
+*.seed
