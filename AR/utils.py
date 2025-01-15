@@ -38,5 +38,3 @@ def create_textured_3d_mesh(image_path, output_path):
 
     # Export to .glb
     mesh.export(output_path)
-
-# changes added
