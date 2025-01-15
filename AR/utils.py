@@ -1,40 +1,20 @@
-import trimesh
 import numpy as np
 from PIL import Image
+import trimesh
 
-
-def create_textured_3d_model(image_path, output_path, invert_y_axis=False, depth_map=None, depth_scale=0.1):
-    """
-    Generate a 3D GLB model from an image with optional depth mapping.
-    Args:
-        image_path (str): Path to the input image.
-        output_path (str): Path to save the 3D model.
-        invert_y_axis (bool): Whether to invert the Y-axis (corrects for orientation in some viewers).
-        depth_map (str): Path to an optional depth map for Z-axis variations.
-        depth_scale (float): Scale for depth variations (ignored if depth_map is None).
-    """
-    # Load the image and process it
-    img = Image.open(image_path).convert("RGBA")
+def create_textured_3d_mesh(image_path, output_path):
+    # Open the image and get dimensions
+    img = Image.open(image_path)
     width, height = img.size
     texture = np.array(img) / 255.0  # Normalize texture
 
-    # Create grid of vertices
+    # Create a grid of vertices
     x = np.linspace(0, 1, width)
     y = np.linspace(0, 1, height)
     xv, yv = np.meshgrid(x, y)
-    zv = np.zeros_like(xv)  # Flat Z-plane
+    zv = np.zeros_like(xv)  # Flat surface (z = 0)
 
-    # Optional depth mapping
-    if depth_map:
-        depth_img = Image.open(depth_map).convert("L")
-        depth_array = np.array(depth_img) / 255.0
-        zv = depth_array * depth_scale
-
-    # Invert Y-axis if needed
-    if invert_y_axis:
-        yv = 1 - yv
-
-    # Combine vertices
+    # Combine into vertices
     vertices = np.stack([xv.flatten(), yv.flatten(), zv.flatten()], axis=1)
 
     # Create triangular faces
@@ -51,10 +31,25 @@ def create_textured_3d_model(image_path, output_path, invert_y_axis=False, depth
 
     faces = np.array(faces)
 
-    # Create mesh and apply texture
-    mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
-    mesh.visual.vertex_colors = texture.reshape(-1, 4)
+    # Duplicate vertices and faces for the back side
+    back_vertices = vertices.copy()
+    back_vertices[:, 2] = -0.01  # Slightly offset for back side
 
-    # Export model to GLTF/GLB
+    back_faces = faces.copy()
+    back_faces = back_faces[:, ::-1]  # Reverse winding order for normals
+
+    # Combine front and back vertices and faces
+    combined_vertices = np.vstack([vertices, back_vertices])
+    combined_faces = np.vstack([faces, back_faces + len(vertices)])
+
+    # Apply texture to both sides
+    front_texture = np.flipud(texture).reshape(-1, 3)
+    back_texture = np.flipud(texture).reshape(-1, 3)  
+    combined_texture = np.vstack([front_texture, back_texture])
+
+    # Create the mesh
+    mesh = trimesh.Trimesh(vertices=combined_vertices, faces=combined_faces)
+    mesh.visual.vertex_colors = combined_texture
+
+    # Export to .glb
     mesh.export(output_path)
-    return output_path
